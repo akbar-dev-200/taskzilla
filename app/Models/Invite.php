@@ -41,5 +41,106 @@ class Invite extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    /**
+     * Check if the invitation is expired.
+     *
+     * @return bool
+     */
+    public function isExpired(): bool
+    {
+        return $this->expires_at && $this->expires_at->isPast();
+    }
+
+    /**
+     * Check if the invitation is pending.
+     *
+     * @return bool
+     */
+    public function isPending(): bool
+    {
+        return $this->status === InviteStatus::PENDING && !$this->isExpired();
+    }
+
+    /**
+     * Check if the invitation is accepted.
+     *
+     * @return bool
+     */
+    public function isAccepted(): bool
+    {
+        return $this->status === InviteStatus::ACCEPTED;
+    }
+
+    /**
+     * Check if the invitation is revoked.
+     *
+     * @return bool
+     */
+    public function isRevoked(): bool
+    {
+        return $this->status === InviteStatus::REVOKED;
+    }
+
+    /**
+     * Get the acceptance URL.
+     *
+     * @return string
+     */
+    public function getAcceptanceUrl(): string
+    {
+        return config('app.frontend_url') . '/invites/accept?token=' . $this->token;
+    }
+
+    /**
+     * Scope to get only pending invitations.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', InviteStatus::PENDING)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
+    }
+
+    /**
+     * Scope to get expired invitations.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeExpired($query)
+    {
+        return $query->where('expires_at', '<=', now())
+            ->where('status', InviteStatus::PENDING);
+    }
+
+    /**
+     * Scope to filter by team.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $teamId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForTeam($query, int $teamId)
+    {
+        return $query->where('team_id', $teamId);
+    }
+
+    /**
+     * Scope to filter by email.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $email
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForEmail($query, string $email)
+    {
+        return $query->where('email', $email);
+    }
 }
 
