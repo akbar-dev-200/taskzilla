@@ -33,7 +33,7 @@ class Team extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_user')
-            ->withPivot(['joined_at', 'uuid'])
+            ->withPivot(['role', 'joined_at', 'uuid'])
             ->withTimestamps();
     }
 

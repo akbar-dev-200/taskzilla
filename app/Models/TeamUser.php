@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,10 +18,12 @@ class TeamUser extends Model
         'uuid',
         'team_id',
         'user_id',
+        'role',
         'joined_at',
     ];
 
     protected $casts = [
+        'role' => UserRole::class,
         'joined_at' => 'datetime',
     ];
 

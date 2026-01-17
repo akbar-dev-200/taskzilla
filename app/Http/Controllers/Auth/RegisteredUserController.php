@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Enums\UserRole;
 
 class RegisteredUserController extends Controller
 {
@@ -30,6 +31,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->string('password')),
+            'role' => UserRole::ADMIN,
         ]);
 
         event(new Registered($user));
