@@ -4,35 +4,50 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Login an authenticated session.
      */
-    public function login(LoginRequest $request): Response
+    public function login(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        $user = $request->user();
 
-        return response()->noContent();
+        // Create Sanctum token for API authentication
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'uuid' => $user->uuid,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+                'token' => $token,
+            ],
+        ], 200);
     }
 
     /**
      * Logout an authenticated session.
      */
-    public function logout(Request $request): Response
+    public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
+        // Revoke all tokens for the authenticated user
+        $request->user()->tokens()->delete();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return response()->noContent();
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout successful',
+        ], 200);
     }
 }
