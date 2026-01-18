@@ -20,6 +20,16 @@ class Team extends Model
         'created_by',
     ];
 
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     public function lead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'lead_id');

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TeamService
 {
@@ -56,6 +57,7 @@ class TeamService
 
             // Attach the creator as a member with LEAD role
             $team->members()->attach($user->id, [
+                'uuid' => Str::uuid()->toString(),
                 'role' => UserRole::LEAD,
                 'joined_at' => now(),
             ]);
