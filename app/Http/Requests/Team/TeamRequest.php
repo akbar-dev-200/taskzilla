@@ -10,17 +10,20 @@ class TeamRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     * Only admin can create, update and delete teams.
      */
     public function authorize(): bool
     {
-       if($this->route()->getName() === 'team.create') {
-        return Gate::allows('create-team');
-       }
-       if($this->route()->getName() === 'team.delete') {
-        return Gate::allows('delete-team');
-       }
-       return true;
+        $routeName = $this->route()->getName();
+
+        // Check authorization based on route name
+        return match ($routeName) {
+            'team.index' => Gate::allows('view-team-list'),
+            'team.store' => Gate::allows('create-team'),
+            'team.show' => Gate::allows('view-team', $this->route('team')),
+            'team.update' => Gate::allows('update-team', $this->route('team')),
+            'team.destroy' => Gate::allows('delete-team', $this->route('team')),
+            default => true,
+        };
     }
 
     /**
@@ -30,21 +33,69 @@ class TeamRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        $routeName = $this->route()->getName();
+
+        return match ($routeName) {
+            'team.index' => $this->indexRules(),
+            'team.store' => $this->storeRules(),
+            'team.update' => $this->updateRules(),
+            default => [],
+        };
+    }
+
+    /**
+     * Validation rules for index/list endpoint
+     *
+     * @return array
+     */
+    protected function indexRules(): array
+    {
+        return [
+            'per_page' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:100',
+            ],
+        ];
+    }
+
+    /**
+     * Validation rules for store endpoint
+     *
+     * @return array
+     */
+    protected function storeRules(): array
+    {
+        return [
             'name' => [
-                $this->isMethod('PUT') || $this->isMethod('PATCH') ? 'sometimes' : 'required',
+                'required',
                 'string',
                 'min:2',
                 'max:255',
-            ],
-            'lead_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('users', 'id'),
+                Rule::unique('teams', 'name'),
             ],
         ];
+    }
 
-        return $rules;
+    /**
+     * Validation rules for update endpoint
+     *
+     * @return array
+     */
+    protected function updateRules(): array
+    {
+        $teamId = $this->route('team')->id ?? null;
+
+        return [
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+                Rule::unique('teams', 'name')->ignore($teamId),
+            ],
+        ];
     }
 
     /**
@@ -56,7 +107,7 @@ class TeamRequest extends FormRequest
     {
         return [
             'name' => 'team name',
-            'lead_id' => 'team lead',
+            'per_page' => 'items per page',
         ];
     }
 
@@ -69,10 +120,13 @@ class TeamRequest extends FormRequest
     {
         return [
             'name.required' => 'The team name is required.',
+            'name.string' => 'The team name must be a valid text.',
             'name.min' => 'The team name must be at least :min characters.',
             'name.max' => 'The team name must not exceed :max characters.',
-            'lead_id.exists' => 'The selected team lead does not exist.',
-            'lead_id.integer' => 'The team lead must be a valid user ID.',
+            'name.unique' => 'A team with this name already exists.',
+            'per_page.integer' => 'The items per page must be a number.',
+            'per_page.min' => 'The items per page must be at least :min.',
+            'per_page.max' => 'The items per page must not exceed :max.',
         ];
     }
 
@@ -85,6 +139,13 @@ class TeamRequest extends FormRequest
         if ($this->has('name')) {
             $this->merge([
                 'name' => trim($this->name),
+            ]);
+        }
+
+        // Set default per_page if not provided
+        if (!$this->has('per_page')) {
+            $this->merge([
+                'per_page' => 10,
             ]);
         }
     }

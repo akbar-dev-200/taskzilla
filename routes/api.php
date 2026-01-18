@@ -8,11 +8,23 @@ use Illuminate\Support\Facades\Route;
 // Protected routes - require authentication
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Admin only routes - Team management
-    Route::middleware('role:admin')->prefix('teams')->group(function () {
-        Route::get('/', [TeamController::class, 'teamList'])->name('team.list');
-        Route::post('/', [TeamController::class, 'teamCreate'])->name('team.create');
-        Route::delete('/{id}', [TeamController::class, 'teamDelete'])->name('team.delete');
+    // Team management routes
+    Route::prefix('teams')->group(function () {
+        // List all teams user belongs to (authenticated users)
+        Route::get('/', [TeamController::class, 'index'])->name('team.index');
+        
+        // Create a new team (any authenticated user can create)
+        Route::post('/', [TeamController::class, 'store'])->name('team.store');
+        
+        // Show team details with members and tasks overview (team members only)
+        Route::get('/{team}', [TeamController::class, 'show'])->name('team.show');
+        
+        // Update team name (team lead or admin only)
+        Route::put('/{team}', [TeamController::class, 'update'])->name('team.update');
+        Route::patch('/{team}', [TeamController::class, 'update'])->name('team.update.patch');
+        
+        // Delete team (admin only)
+        Route::delete('/{team}', [TeamController::class, 'destroy'])->name('team.destroy');
     });
 
     // Invitation routes
