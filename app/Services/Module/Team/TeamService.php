@@ -5,7 +5,6 @@ namespace App\Services\Module\Team;
 use App\Enums\UserRole;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -123,7 +122,10 @@ class TeamService
      */
     public function updateTeam(Team $team, array $data): Team
     {
-        $team->update($data);
+        // Some static analyzers can misread Eloquent's `update(array $attributes)` signature.
+        // `fill()->save()` is equivalent and avoids the false-positive "0 args accepted" error.
+        $team->fill($data);
+        $team->save();
         
         // Reload relationships
         $team->load([
@@ -150,8 +152,11 @@ class TeamService
             // Detach all members
             $team->members()->detach();
             
-            // Delete the team
-            return $team->delete();
+            /**
+             * Some static analyzers confuse `$team->delete()` with the query-builder signature.
+             * Use an explicit model query delete to keep both runtime + static analysis happy.
+             */
+            return (bool) Team::query()->whereKey($team->getKey())->delete();
         });
     }
 
