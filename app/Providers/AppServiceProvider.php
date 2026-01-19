@@ -16,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Storage bindings (S3-first)
+        $this->app->bind(FileStorageService::class, S3FileStorageService::class);
     }
 
     /**
@@ -31,8 +32,5 @@ class AppServiceProvider extends ServiceProvider
         // Register Gates
         TeamGates::register();
         TaskGates::register();
-
-        // Bind the interface to the S3 implementation
-        $this->app->bind(FileStorageService::class, S3FileStorageService::class);
     }
 }
