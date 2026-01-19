@@ -6,11 +6,14 @@ use App\Http\Requests\Team\TeamRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Services\Module\Team\TeamService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class TeamController extends Controller
 {
+    use ApiResponse;
+
     protected TeamService $teamService;
 
     public function __construct(TeamService $teamService)
@@ -32,22 +35,18 @@ class TeamController extends Controller
                 $request->validated('per_page')
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Teams retrieved successfully',
-                'data' => $teams,
-            ], 200);
+            return $this->paginatedResponse($teams, 'Teams retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch teams list', [
                 'error' => $th->getMessage(),
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve teams',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve teams',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -57,7 +56,7 @@ class TeamController extends Controller
      * @param TeamRequest $request
      * @return JsonResponse
      */
-    public function teamCreate(TeamRequest $request): JsonResponse
+    public function store(TeamRequest $request): JsonResponse
     {
         try {
             $team = $this->teamService->createTeam(
@@ -97,11 +96,7 @@ class TeamController extends Controller
         try {
             $teamDetails = $this->teamService->getTeamDetails($team);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Team details retrieved successfully',
-                'data' => $teamDetails,
-            ], 200);
+            return $this->successResponse($teamDetails, 'Team details retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch team details', [
                 'error' => $th->getMessage(),
@@ -109,11 +104,11 @@ class TeamController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve team details',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve team details',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -132,11 +127,7 @@ class TeamController extends Controller
                 $request->validated()
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Team updated successfully',
-                'data' => $updatedTeam,
-            ], 200);
+            return $this->successResponse($updatedTeam, 'Team updated successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to update team', [
                 'error' => $th->getMessage(),
@@ -145,11 +136,11 @@ class TeamController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update team',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to update team',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -165,10 +156,7 @@ class TeamController extends Controller
         try {
             $this->teamService->deleteTeam($team);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Team deleted successfully',
-            ], 200);
+            return $this->noContentResponse('Team deleted successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to delete team', [
                 'error' => $th->getMessage(),
@@ -176,11 +164,11 @@ class TeamController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete team',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to delete team',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 }

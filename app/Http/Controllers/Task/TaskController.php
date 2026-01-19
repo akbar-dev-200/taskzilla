@@ -7,11 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Task\TaskRequest;
 use App\Models\Task;
 use App\Services\Module\Task\TaskService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
+    use ApiResponse;
+
     protected TaskService $taskService;
 
     public function __construct(TaskService $taskService)
@@ -36,11 +39,7 @@ class TaskController extends Controller
                 $filters['per_page'] ?? 10
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Tasks retrieved successfully',
-                'data' => $tasks,
-            ], 200);
+            return $this->paginatedResponse($tasks, 'Tasks retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch tasks list', [
                 'error' => $th->getMessage(),
@@ -48,11 +47,11 @@ class TaskController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve tasks',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve tasks',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -72,22 +71,18 @@ class TaskController extends Controller
                 $filters['per_page'] ?? 10
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Your tasks retrieved successfully',
-                'data' => $tasks,
-            ], 200);
+            return $this->paginatedResponse($tasks, 'Your tasks retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch user tasks', [
                 'error' => $th->getMessage(),
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve your tasks',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve your tasks',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -105,11 +100,7 @@ class TaskController extends Controller
                 $request->user()
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task created successfully',
-                'data' => $task,
-            ], 201);
+            return $this->createdResponse($task, 'Task created successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to create task', [
                 'error' => $th->getMessage(),
@@ -117,11 +108,11 @@ class TaskController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create task',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to create task',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -137,11 +128,7 @@ class TaskController extends Controller
         try {
             $taskDetails = $this->taskService->getTaskDetails($task);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task details retrieved successfully',
-                'data' => $taskDetails,
-            ], 200);
+            return $this->successResponse($taskDetails, 'Task details retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch task details', [
                 'error' => $th->getMessage(),
@@ -149,11 +136,11 @@ class TaskController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve task details',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve task details',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -172,11 +159,7 @@ class TaskController extends Controller
                 $request->validated()
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task updated successfully',
-                'data' => $updatedTask,
-            ], 200);
+            return $this->successResponse($updatedTask, 'Task updated successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to update task', [
                 'error' => $th->getMessage(),
@@ -185,11 +168,11 @@ class TaskController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update task',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to update task',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -209,11 +192,7 @@ class TaskController extends Controller
                 TaskStatus::from($validated['status'])
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task status updated successfully',
-                'data' => $updatedTask,
-            ], 200);
+            return $this->successResponse($updatedTask, 'Task status updated successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to update task status', [
                 'error' => $th->getMessage(),
@@ -222,11 +201,11 @@ class TaskController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update task status',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to update task status',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -242,10 +221,7 @@ class TaskController extends Controller
         try {
             $this->taskService->deleteTask($task);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task deleted successfully',
-            ], 200);
+            return $this->noContentResponse('Task deleted successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to delete task', [
                 'error' => $th->getMessage(),
@@ -253,11 +229,11 @@ class TaskController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete task',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to delete task',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -276,15 +252,11 @@ class TaskController extends Controller
 
             $task->load(['assignees:id,name,email']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Users assigned to task successfully',
-                'data' => [
-                    'task_id' => $task->id,
-                    'task_uuid' => $task->uuid,
-                    'assignees' => $task->assignees,
-                ],
-            ], 200);
+            return $this->successResponse([
+                'task_id' => $task->id,
+                'task_uuid' => $task->uuid,
+                'assignees' => $task->assignees,
+            ], 'Users assigned to task successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to assign users to task', [
                 'error' => $th->getMessage(),
@@ -293,11 +265,11 @@ class TaskController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to assign users to task',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to assign users to task',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -316,15 +288,11 @@ class TaskController extends Controller
 
             $task->load(['assignees:id,name,email']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Users removed from task successfully',
-                'data' => [
-                    'task_id' => $task->id,
-                    'task_uuid' => $task->uuid,
-                    'assignees' => $task->assignees,
-                ],
-            ], 200);
+            return $this->successResponse([
+                'task_id' => $task->id,
+                'task_uuid' => $task->uuid,
+                'assignees' => $task->assignees,
+            ], 'Users removed from task successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to remove users from task', [
                 'error' => $th->getMessage(),
@@ -333,11 +301,11 @@ class TaskController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove users from task',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to remove users from task',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 
@@ -352,22 +320,18 @@ class TaskController extends Controller
         try {
             $stats = $this->taskService->getTaskStatistics($teamId);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task statistics retrieved successfully',
-                'data' => $stats,
-            ], 200);
+            return $this->successResponse($stats, 'Task statistics retrieved successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to fetch task statistics', [
                 'error' => $th->getMessage(),
                 'team_id' => $teamId,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve task statistics',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to retrieve task statistics',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
     }
 }
