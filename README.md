@@ -24,6 +24,7 @@
 - [Architecture](#-architecture)
 - [Database Schema](#-database-schema)
 - [Application Flows](#-application-flows)
+- [File Storage (S3)](#-file-storage-s3)
 - [Tech Stack](#-tech-stack)
 - [Installation](#-installation)
 - [API Documentation](#-api-documentation)
@@ -166,6 +167,15 @@ Taskzilla follows **clean architecture principles** with clear separation of con
 │                  (PostgreSQL)                               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 📦 File Storage (S3)
+
+Taskzilla stores uploaded files on **Amazon S3** by default (so your API server stays lightweight and stateless).
+
+- **Setup**: `S3_STORAGE_SETUP.md`
+- **Key env**: `FILESYSTEM_DISK=s3`
 
 ---
 
