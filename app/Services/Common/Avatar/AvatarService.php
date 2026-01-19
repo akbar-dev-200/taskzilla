@@ -5,7 +5,9 @@ namespace App\Services\Common\Avatar;
 use App\Models\User;
 use App\Services\Common\FileStorage\FileStorageManager;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AvatarService
 {
@@ -50,6 +52,51 @@ class AvatarService
     }
 
     /**
+     * Generate a default avatar (SVG with initials) and store it on S3.
+     * Example: "John Doe" -> "JD".
+     *
+     * @return array{path:string, url:string, initials:string}
+     */
+    public function generateDefaultAvatar(User $user): array
+    {
+        $previousPath = $user->avatar;
+
+        $initials = $this->initialsFromName($user->name);
+        $color = $this->colorFromSeed($user->uuid ?: (string) $user->id);
+
+        $svg = $this->buildInitialsSvg($initials, $color);
+
+        $directory = "avatars/{$user->id}";
+        $filename = 'default-' . Str::uuid()->toString() . '.svg';
+        $path = trim($directory, '/') . '/' . $filename;
+
+        // Write directly to S3 (no local file required).
+        Storage::disk('s3')->put($path, $svg, ['visibility' => 'public', 'ContentType' => 'image/svg+xml']);
+
+        $user->avatar = $path;
+        $user->save();
+
+        // Best-effort cleanup of the previous avatar to avoid orphaned files.
+        if (!empty($previousPath) && $previousPath !== $path) {
+            try {
+                $this->storage->delete($previousPath);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to delete previous avatar from storage', [
+                    'user_id' => $user->id,
+                    'previous_path' => $previousPath,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return [
+            'path' => $path,
+            'url' => $this->storage->url($path),
+            'initials' => $initials,
+        ];
+    }
+
+    /**
      * Delete the user's avatar from S3 and clear `users.avatar`.
      */
     public function delete(User $user): bool
@@ -85,5 +132,55 @@ class AvatarService
         }
 
         return $this->storage->url($user->avatar);
+    }
+
+    protected function initialsFromName(string $name): string
+    {
+        $name = trim(preg_replace('/\s+/', ' ', $name) ?? '');
+        if ($name === '') {
+            return 'U';
+        }
+
+        $parts = array_values(array_filter(explode(' ', $name)));
+
+        $first = mb_substr($parts[0] ?? 'U', 0, 1);
+        $second = mb_substr($parts[1] ?? '', 0, 1);
+
+        $initials = mb_strtoupper($first . $second);
+
+        // Ensure exactly 2 chars when possible, otherwise 1.
+        return $initials !== '' ? $initials : 'U';
+    }
+
+    /**
+     * Pick a deterministic background color so the same user always gets the same vibe.
+     */
+    protected function colorFromSeed(string $seed): string
+    {
+        $palette = [
+            '#2563EB', // blue
+            '#7C3AED', // purple
+            '#DB2777', // pink
+            '#059669', // emerald
+            '#D97706', // amber
+            '#0EA5E9', // sky
+        ];
+
+        $idx = crc32($seed) % count($palette);
+        return $palette[(int) $idx];
+    }
+
+    protected function buildInitialsSvg(string $initials, string $bgColor): string
+    {
+        $safeInitials = htmlspecialchars($initials, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Avatar {$safeInitials}">
+  <rect width="256" height="256" fill="{$bgColor}" rx="48" />
+  <text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle"
+        font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+        font-size="96" font-weight="700" fill="#FFFFFF">{$safeInitials}</text>
+</svg>
+SVG;
     }
 }

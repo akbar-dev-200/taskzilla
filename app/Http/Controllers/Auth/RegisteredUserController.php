@@ -45,6 +45,10 @@ class RegisteredUserController extends Controller
         if ($request->hasFile('avatar')) {
             $this->avatarService->generateAndUploadAvatar($user, $request->file('avatar'));
             $user->refresh();
+        } else {
+            // Auto-generate a default avatar (e.g., John Doe -> JD) when no file is provided.
+            $this->avatarService->generateDefaultAvatar($user);
+            $user->refresh();
         }
 
         event(new Registered($user));
