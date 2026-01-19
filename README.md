@@ -11,7 +11,7 @@
 
 **A powerful, team-based task management system with multi-user assignment, role-based access control, and real-time collaboration features.**
 
-[Features](#-features) • [Architecture](#-architecture) • [Installation](#-installation) • [API Docs](#-api-documentation) • [Database Schema](#-database-schema)
+[Features](#-features) • [Architecture](#-architecture) • [Database Schema](#-database-schema) • [Application Flows](#-application-flows) • [Installation](#-installation) • [API Docs](#-api-documentation)
 
 </div>
 
@@ -23,6 +23,7 @@
 - [Features](#-features)
 - [Architecture](#-architecture)
 - [Database Schema](#-database-schema)
+- [Application Flows](#-application-flows)
 - [Tech Stack](#-tech-stack)
 - [Installation](#-installation)
 - [API Documentation](#-api-documentation)
@@ -269,6 +270,43 @@ Taskzilla follows **clean architecture principles** with clear separation of con
 | **Comment → Task** | Belongs To | Comments belong to tasks |
 | **File → Task** | Belongs To | Files belong to tasks |
 | **Invite → Team** | Belongs To | Invites are for specific teams |
+
+---
+
+## 🔄 Application Flows
+
+Understanding how Taskzilla works? Check out our comprehensive flow diagrams!
+
+### 📚 Flow Documentation
+
+| Document | Description | Topics Covered |
+|----------|-------------|----------------|
+| [**Application Flow**](Flows/APPLICATION_FLOW.md) | 🎯 High-level overview of the entire system | Complete user journey, System architecture, Feature flows, Permission system, Real-world examples |
+| [**Invitation Flow**](Flows/INVITATION_FLOW_DIAGRAM.md) | 📧 Detailed invitation system flow | Send invitations, Accept invitations, Revoke invitations, Email flow, Permission matrix |
+
+### 🎯 Quick Flow Guide
+
+**New to Taskzilla?** Start here:
+
+1. **Read:** [Application Flow](Flows/APPLICATION_FLOW.md) - Get the big picture
+2. **Deep Dive:** [Invitation Flow](Flows/INVITATION_FLOW_DIAGRAM.md) - Understand team invitations
+3. **API Reference:** [API Documentation](#-api-documentation) - Test the endpoints
+4. **Database:** [Database Schema](#-database-schema) - See the data structure
+
+### 🚀 What You'll Learn
+
+From the flow documentation:
+
+- ✅ How users register and authenticate
+- ✅ How teams are created and managed
+- ✅ How invitations work (email → token → acceptance)
+- ✅ How tasks are created and assigned
+- ✅ How multi-user collaboration works
+- ✅ How permissions are enforced
+- ✅ How data flows through the system
+- ✅ Real-world usage scenarios
+
+**Perfect for:** Developers, stakeholders, new team members, and integration partners!
 
 ---
 
@@ -546,9 +584,18 @@ curl -X POST http://127.0.0.1:8000/api/tasks \
   }'
 ```
 
-For detailed API documentation, see:
-- 📄 [TEAM_CRUD_DOCUMENTATION.md](TEAM_CRUD_DOCUMENTATION.md)
-- 📄 [TASK_CRUD_DOCUMENTATION.md](TASK_CRUD_DOCUMENTATION.md)
+### 📚 Detailed Documentation
+
+| Document | Description |
+|----------|-------------|
+| 📄 [Application Flow](Flows/APPLICATION_FLOW.md) | High-level overview of entire system |
+| 📄 [Invitation Flow](Flows/INVITATION_FLOW_DIAGRAM.md) | Team invitation system flow |
+| 📄 [Team CRUD](TEAM_CRUD_DOCUMENTATION.md) | Complete team management API |
+| 📄 [Task CRUD](TASK_CRUD_DOCUMENTATION.md) | Complete task management API |
+
+**Testing Tools:**
+- 📮 Import `Taskzilla_API_Complete.postman_collection.json` into Postman
+- 🌍 Import `Taskzilla.postman_environment.json` for environment variables
 
 ---
 
@@ -714,6 +761,51 @@ php artisan test --testsuite=Feature
 # Run with coverage
 php artisan test --coverage
 ```
+
+---
+
+## 📚 Documentation Index
+
+### 🔄 Application Flows & Diagrams
+
+| Document | Description | Best For |
+|----------|-------------|----------|
+| [Application Flow](Flows/APPLICATION_FLOW.md) | Complete system overview with visual diagrams | Understanding the big picture |
+| [Invitation Flow](Flows/INVITATION_FLOW_DIAGRAM.md) | Team invitation system workflow | Understanding team collaboration |
+
+### 📖 API Documentation
+
+| Document | Description | Best For |
+|----------|-------------|----------|
+| [Team CRUD](TEAM_CRUD_DOCUMENTATION.md) | Team management endpoints | Building team features |
+| [Task CRUD](TASK_CRUD_DOCUMENTATION.md) | Task management endpoints | Building task features |
+
+### 🧪 Testing & Tools
+
+| File | Description | Usage |
+|------|-------------|-------|
+| `Taskzilla_API_Complete.postman_collection.json` | Complete Postman collection (24 endpoints) | Import to Postman for testing |
+| `Taskzilla.postman_environment.json` | Environment variables | Import to Postman |
+
+### 🗄️ Database Documentation
+
+| Document | Description | Best For |
+|----------|-------------|----------|
+| `database_schema.dbml` | Complete database schema in DBML format | Visualizing on dbdiagram.io |
+
+### 💡 Additional Resources
+
+| Document | Description |
+|----------|-------------|
+| `README.md` | This file - project overview |
+| `TASK_CRUD_DOCUMENTATION.md` | Detailed task API documentation |
+| `TEAM_CRUD_DOCUMENTATION.md` | Detailed team API documentation |
+
+**Quick Links:**
+- 🎯 [Get Started](#-installation) - Install and run
+- 🔐 [Security](#-security) - Security features
+- 🏗️ [Architecture](#-architecture) - System design
+- 📊 [Database Schema](#-database-schema) - Data structure
 
 ---
 
