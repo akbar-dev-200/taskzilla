@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Invite\InviteController;
+use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Team\TeamController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,5 +53,38 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Get my pending invitations
         Route::get('/my-pending', [InviteController::class, 'getMyPendingInvitations'])->name('invite.my-pending');
+    });
+
+    // Task management routes
+    // Get my assigned tasks (across all teams)
+    Route::get('/tasks/my-tasks', [TaskController::class, 'myTask'])->name('tasks.my-tasks');
+    
+    Route::prefix('tasks')->group(function () {
+        // List tasks for a specific team
+        Route::get('/team/{teamId}', [TaskController::class, 'taskList'])->name('tasks.index');
+        
+        // Get task statistics for a team
+        Route::get('/team/{teamId}/statistics', [TaskController::class, 'taskStatistics'])->name('tasks.statistics');
+        
+        // Create a new task
+        Route::post('/', [TaskController::class, 'createTask'])->name('tasks.store');
+        
+        // Show task details
+        Route::get('/{task}', [TaskController::class, 'taskShow'])->name('tasks.show');
+        
+        // Update task
+        Route::put('/{task}', [TaskController::class, 'updateTask'])->name('tasks.update');
+        
+        // Update task status
+        Route::patch('/{task}/status', [TaskController::class, 'updateTaskStatus'])->name('tasks.update-status');
+        
+        // Delete task
+        Route::delete('/{task}', [TaskController::class, 'deleteTask'])->name('tasks.destroy');
+        
+        // Assign users to task
+        Route::post('/{task}/assign', [TaskController::class, 'assignTaskUsers'])->name('tasks.assign');
+        
+        // Remove users from task
+        Route::post('/{task}/remove-assignees', [TaskController::class, 'removeTaskAssignees'])->name('tasks.remove-assignee');
     });
 });

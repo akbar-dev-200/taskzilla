@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\AccessControl\Gates\TaskGates;
 use App\AccessControl\Gates\TeamGates;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
@@ -27,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Gates
         TeamGates::register();
+        TaskGates::register();
     }
 }
