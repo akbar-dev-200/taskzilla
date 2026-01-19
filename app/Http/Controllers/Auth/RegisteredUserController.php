@@ -8,9 +8,11 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use App\Services\Common\Avatar\AvatarService;
 use App\Enums\UserRole;
+use App\Mail\WelcomeMail;
 
 class RegisteredUserController extends Controller
 {
@@ -52,6 +54,19 @@ class RegisteredUserController extends Controller
         }
 
         event(new Registered($user));
+
+        // Dispatch welcome email from controller (as requested)
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        } catch (\Throwable $e) {
+            // Do not fail registration if mail is misconfigured.
+            // You can inspect logs to debug mail transport.
+            logger()->warning('Welcome email failed to send', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Create Sanctum token for API authentication
         $token = $user->createToken('auth_token')->plainTextToken;
