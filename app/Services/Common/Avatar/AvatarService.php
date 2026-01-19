@@ -5,7 +5,6 @@ namespace App\Services\Common\Avatar;
 use App\Models\User;
 use App\Services\Common\FileStorage\FileStorageManager;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AvatarService
@@ -19,7 +18,7 @@ class AvatarService
      *
      * @return array{path:string, url:string}
      */
-    public function upload(User $user, UploadedFile $file): array
+    public function generateAndUploadAvatar(User $user, UploadedFile $file): array
     {
         $previousPath = $user->avatar;
 
