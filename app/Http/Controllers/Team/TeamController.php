@@ -51,12 +51,12 @@ class TeamController extends Controller
     }
 
     /**
-     * Store a newly created team.
+     * Create a new team (preferred method name used by routes/api.php).
      *
      * @param TeamRequest $request
      * @return JsonResponse
      */
-    public function store(TeamRequest $request): JsonResponse
+    public function teamCreate(TeamRequest $request): JsonResponse
     {
         try {
             $team = $this->teamService->createTeam(
@@ -64,11 +64,7 @@ class TeamController extends Controller
                 $request->user()
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Team created successfully',
-                'data' => $team,
-            ], 201);
+            return $this->createdResponse($team, 'Team created successfully');
         } catch (\Throwable $th) {
             Log::error('Failed to create team', [
                 'error' => $th->getMessage(),
@@ -76,12 +72,20 @@ class TeamController extends Controller
                 'data' => $request->validated(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create team',
-                'error' => config('app.debug') ? $th->getMessage() : 'An error occurred',
-            ], 500);
+            return $this->errorResponse(
+                'Failed to create team',
+                500,
+                config('app.debug') ? $th->getMessage() : null
+            );
         }
+    }
+
+    /**
+     * Store alias kept for compatibility (if any code calls TeamController@store).
+     */
+    public function store(TeamRequest $request): JsonResponse
+    {
+        return $this->teamCreate($request);
     }
 
     /**
