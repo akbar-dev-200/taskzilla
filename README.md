@@ -11,7 +11,7 @@
 
 **A powerful, team-based task management system with multi-user assignment, role-based access control, and real-time collaboration features.**
 
-[Features](#-features) • [Architecture](#-architecture) • [Database Schema](#-database-schema) • [Application Flows](#-application-flows) • [Installation](#-installation) • [API Docs](#-api-documentation)
+[Features](#-features) • [Architecture](#architecture) • [Database Schema](#database-schema) • [Application Flows](#-application-flows) • [Installation](#-installation) • [API Docs](#-api-documentation)
 
 </div>
 
@@ -21,8 +21,8 @@
 
 - [About](#-about)
 - [Features](#-features)
-- [Architecture](#-architecture)
-- [Database Schema](#-database-schema)
+- [Architecture](#architecture)
+- [Database Schema](#database-schema)
 - [Application Flows](#-application-flows)
 - [File Storage (S3)](#-file-storage-s3)
 - [Tech Stack](#-tech-stack)
@@ -103,6 +103,8 @@
 
 ---
 
+<a id="architecture"></a>
+
 ## 🏗️ Architecture
 
 Taskzilla follows **clean architecture principles** with clear separation of concerns:
@@ -178,6 +180,8 @@ Taskzilla stores uploaded files on **Amazon S3** by default (so your API server 
 - **Key env**: `FILESYSTEM_DISK=s3`
 
 ---
+
+<a id="database-schema"></a>
 
 ## 🗄️ Database Schema
 
@@ -301,7 +305,7 @@ Understanding how Taskzilla works? Check out our comprehensive flow diagrams!
 1. **Read:** [Application Flow](Flows/APPLICATION_FLOW.md) - Get the big picture
 2. **Deep Dive:** [Invitation Flow](Flows/INVITATION_FLOW_DIAGRAM.md) - Understand team invitations
 3. **API Reference:** [API Documentation](#-api-documentation) - Test the endpoints
-4. **Database:** [Database Schema](#-database-schema) - See the data structure
+4. **Database:** [Database Schema](#database-schema) - See the data structure
 
 ### 🚀 What You'll Learn
 
@@ -814,8 +818,8 @@ php artisan test --coverage
 **Quick Links:**
 - 🎯 [Get Started](#-installation) - Install and run
 - 🔐 [Security](#-security) - Security features
-- 🏗️ [Architecture](#-architecture) - System design
-- 📊 [Database Schema](#-database-schema) - Data structure
+- 🏗️ [Architecture](#architecture) - System design
+- 📊 [Database Schema](#database-schema) - Data structure
 
 ---
 
