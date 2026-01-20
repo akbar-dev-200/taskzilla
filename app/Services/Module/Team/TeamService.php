@@ -93,7 +93,7 @@ class TeamService
             },
             'tasks' => function ($query) {
                 $query->select('id', 'team_id', 'title', 'status', 'priority', 'due_date', 'created_at')
-                    ->with('assignee:id,name,email')
+                    ->with('assignees:id,name,email')
                     ->latest()
                     ->limit(10);
             }
