@@ -101,7 +101,15 @@ class TaskService
         }
 
         if (isset($filters['team_id'])) {
-            $query->where('team_id', $filters['team_id']);
+            $teamId = $filters['team_id'];
+            // Convert UUID to ID if needed
+            if (!is_numeric($teamId)) {
+                $team = Team::where('uuid', $teamId)->first();
+                $teamId = $team?->id;
+            }
+            if ($teamId) {
+                $query->where('team_id', $teamId);
+            }
         }
 
         return $query->latest()->paginate($perPage);
@@ -117,6 +125,13 @@ class TaskService
     public function createTask(array $data, User $user): Task
     {
         return DB::transaction(function () use ($data, $user) {
+            // Resolve team_id: if it's a UUID, get the actual team ID
+            $teamId = $data['team_id'];
+            if (!is_numeric($teamId)) {
+                $team = Team::where('uuid', $teamId)->firstOrFail();
+                $teamId = $team->id;
+            }
+            
             // Create the task
             $task = Task::create([
                 'title' => $data['title'],
@@ -124,7 +139,7 @@ class TaskService
                 'status' => $data['status'] ?? TaskStatus::PENDING,
                 'priority' => $data['priority'] ?? TaskPriority::MEDIUM,
                 'due_date' => $data['due_date'] ?? null,
-                'team_id' => $data['team_id'],
+                'team_id' => $teamId,
                 'assigned_by' => $user->id,
             ]);
 

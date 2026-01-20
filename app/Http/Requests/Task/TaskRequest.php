@@ -63,7 +63,7 @@ class TaskRequest extends FormRequest
             'priority' => ['nullable', Rule::enum(TaskPriority::class)],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'assigned_by' => ['nullable', 'integer', 'exists:users,id'],
-            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
+            'team_id' => ['nullable', 'string', 'exists:teams,uuid'], // Accept team UUID
             'overdue' => ['nullable', 'boolean'],
             'due_soon' => ['nullable', 'boolean'],
             'sort_by' => ['nullable', 'string', Rule::in(['created_at', 'due_date', 'priority', 'status', 'title'])],
@@ -85,7 +85,7 @@ class TaskRequest extends FormRequest
             'status' => ['nullable', Rule::enum(TaskStatus::class)],
             'priority' => ['nullable', Rule::enum(TaskPriority::class)],
             'due_date' => ['nullable', 'date', 'after_or_equal:today'],
-            'team_id' => ['required', 'integer', 'exists:teams,id'],
+            'team_id' => ['required', 'string', 'exists:teams,uuid'], // Accept team UUID
             'assignee_ids' => ['nullable', 'array'],
             'assignee_ids.*' => ['integer', 'exists:users,id'],
         ];
@@ -134,8 +134,11 @@ class TaskRequest extends FormRequest
                 'exists:users,id',
                 // Validate user is member of the task's team
                 function ($attribute, $value, $fail) {
+                    /** @var \App\Models\Task $task */
                     $task = $this->route('task');
-                    $user = \App\Models\User::find($value);
+                    
+                    /** @var \App\Models\User|null $user */
+                    $user = \App\Models\User::query()->find($value);
                     
                     if ($user && !$user->teams()->where('teams.id', $task->team_id)->exists()) {
                         $fail('The selected user must be a member of the task\'s team.');

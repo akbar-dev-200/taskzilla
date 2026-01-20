@@ -12,8 +12,10 @@ class TaskGates
     public static function register(): void
     {
         // User can create task if they are member of the team
-        Gate::define('create-task', function (User $user, int $teamId) {
-            return $user->teams()->where('teams.id', $teamId)->exists();
+        Gate::define('create-task', function (User $user, string|int $teamId) {
+            // Support both UUID (string) and ID (int) for backward compatibility
+            $column = is_int($teamId) ? 'teams.id' : 'teams.uuid';
+            return $user->teams()->where($column, $teamId)->exists();
         });
 
         // User can view task if they are member of the team or assigned to the task

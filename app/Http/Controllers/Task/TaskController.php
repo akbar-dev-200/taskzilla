@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Task\TaskRequest;
 use App\Models\Task;
+use App\Models\Team;
 use App\Services\Module\Task\TaskService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -26,15 +27,18 @@ class TaskController extends Controller
      * Display a listing of tasks for a team
      *
      * @param TaskRequest $request
-     * @param int $teamId
+     * @param string $teamId (Team UUID from route)
      * @return JsonResponse
      */
-    public function taskList(TaskRequest $request, int $teamId): JsonResponse
+    public function taskList(TaskRequest $request, string $teamId): JsonResponse
     {
         try {
+            // Convert team UUID to ID for service layer
+            $team = Team::query()->where('uuid', $teamId)->firstOrFail();
+            
             $filters = $request->validated();
             $tasks = $this->taskService->getTeamTasks(
-                $teamId,
+                $team->id,
                 $filters,
                 $filters['per_page'] ?? 10
             );
@@ -312,13 +316,16 @@ class TaskController extends Controller
     /**
      * Get task statistics for a team
      *
-     * @param int $teamId
+     * @param string $teamId (Team UUID from route)
      * @return JsonResponse
      */
-    public function taskStatistics(int $teamId): JsonResponse
+    public function taskStatistics(string $teamId): JsonResponse
     {
         try {
-            $stats = $this->taskService->getTaskStatistics($teamId);
+            // Convert team UUID to ID for service layer
+            $team = Team::query()->where('uuid', $teamId)->firstOrFail();
+            
+            $stats = $this->taskService->getTaskStatistics($team->id);
 
             return $this->successResponse($stats, 'Task statistics retrieved successfully');
         } catch (\Throwable $th) {
