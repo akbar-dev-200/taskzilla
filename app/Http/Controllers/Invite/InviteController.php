@@ -28,7 +28,8 @@ class InviteController extends Controller
     public function sendInvitations(InviteRequest $request): JsonResponse
     {
         try {
-            $team = Team::findOrFail($request->team_id);
+            // `team_id` is a UUID in our API (teams use uuid for route binding).
+            $team = Team::where('uuid', '=', (string) $request->team_id, 'and')->firstOrFail();
 
             // Check if user has permission to invite (team admin/creator)
             $user = $request->user();
@@ -142,13 +143,14 @@ class InviteController extends Controller
      * Get all invitations for a team.
      *
      * @param Request $request
-     * @param int $teamId
+     * @param string $teamId
      * @return JsonResponse
      */
-    public function getTeamInvitations(Request $request, int $teamId): JsonResponse
+    public function getTeamInvitations(Request $request, string $teamId): JsonResponse
     {
         try {
-            $team = Team::findOrFail($teamId);
+            // Accept UUIDs (external identifier)
+            $team = Team::where('uuid', '=', $teamId, 'and')->firstOrFail();
             $user = $request->user();
 
             // Check if user has permission to view invitations

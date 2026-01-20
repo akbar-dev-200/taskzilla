@@ -24,7 +24,9 @@ class InviteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'team_id' => ['required', 'exists:teams,id'],
+            // We accept Team UUIDs externally (route model binding uses uuid too).
+            // Keep the field name `team_id` for backward compatibility with clients.
+            'team_id' => ['required', 'uuid', Rule::exists('teams', 'uuid')],
             'invitations' => ['required', 'array', 'min:1', 'max:50'], // Max 50 invites at once
             'invitations.*.email' => [
                 'required',
@@ -39,6 +41,35 @@ class InviteRequest extends FormRequest
     }
 
     /**
+     * Support a simpler payload:
+     * {
+     *   "team_id": "...uuid...",
+     *   "emails": ["a@x.com", "b@x.com"],
+     *   "role": "member"
+     * }
+     *
+     * by transforming it into the canonical format:
+     * {
+     *   "invitations": [{"email":"a@x.com","role":"member"}, ...]
+     * }
+     */
+    protected function prepareForValidation(): void
+    {
+        $hasInvitations = $this->has('invitations');
+        $emails = $this->input('emails');
+        $role = $this->input('role');
+
+        if (!$hasInvitations && is_array($emails) && !empty($emails) && is_string($role) && $role !== '') {
+            $this->merge([
+                'invitations' => array_map(
+                    fn ($email) => ['email' => $email, 'role' => $role],
+                    $emails
+                ),
+            ]);
+        }
+    }
+
+    /**
      * Get custom messages for validator errors.
      *
      * @return array<string, string>
@@ -47,6 +78,7 @@ class InviteRequest extends FormRequest
     {
         return [
             'team_id.required' => 'Team ID is required',
+            'team_id.uuid' => 'Team ID must be a valid UUID',
             'team_id.exists' => 'The selected team does not exist',
             'invitations.required' => 'At least one invitation is required',
             'invitations.array' => 'Invitations must be an array',

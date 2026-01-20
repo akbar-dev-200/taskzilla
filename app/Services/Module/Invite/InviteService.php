@@ -143,6 +143,7 @@ class InviteService
             // Add user to team with specified role
             $invite->team->members()->syncWithoutDetaching([
                 $user->id => [
+                    'uuid' => Str::uuid()->toString(),
                     'role' => $invite->role,
                     'joined_at' => now(),
                 ]
@@ -242,10 +243,7 @@ class InviteService
      */
     private function isUserAlreadyMember(Team $team, string $email): bool
     {
-        return $team->members()->whereHas('users', function ($query) use ($email) {
-            $query->where('email', $email);
-        })->exists() || User::where('email', $email)->whereHas('teams', function ($query) use ($team) {
-            $query->where('teams.id', $team->id);
-        })->exists();
+        // members() already queries the users table; no nested whereHas() is needed.
+        return $team->members()->where('email', $email)->exists();
     }
 }
