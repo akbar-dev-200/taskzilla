@@ -248,335 +248,87 @@ stateDiagram-v2
 
 ### Authentication Endpoints
 
-#### Register User
-- **Endpoint:** `POST /api/register`
-- **Authentication:** No
-- **Request Payload:**
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "password_confirmation": "password123"
-}
-```
-- **Success Response:** `201 Created`
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": 1,
-      "uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "admin"
-    },
-    "token": "1|abc123xyz..."
-  }
-}
-```
-
-#### Login
-- **Endpoint:** `POST /api/login`
-- **Authentication:** No
-- **Request Payload:**
-```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-- **Success Response:** `200 OK` (Same structure as register)
-
-#### Logout
-- **Endpoint:** `POST /api/logout`
-- **Authentication:** Yes
-- **Success Response:** `200 OK`
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/api/register` | ❌ | Register a new user account and receive authentication token |
+| POST | `/api/login` | ❌ | Login with email/password and receive authentication token |
+| POST | `/api/logout` | ✅ | Logout and revoke current authentication token |
 
 ---
 
 ### Team Management Endpoints
 
-#### List Teams
-- **Endpoint:** `GET /api/teams`
-- **Authentication:** Yes
-- **Query Parameters:** `per_page` (1-100, default: 10)
-- **Success Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "uuid": "550e8400-...",
-        "name": "Development Team",
-        "lead": {"id": 1, "name": "John", "email": "john@example.com"},
-        "members_count": 5,
-        "tasks_count": 12
-      }
-    ],
-    "total": 3
-  }
-}
-```
-
-#### Create Team
-- **Endpoint:** `POST /api/teams`
-- **Authentication:** Yes
-- **Request Payload:**
-```json
-{
-  "name": "Development Team"
-}
-```
-- **Success Response:** `201 Created`
-
-#### View Team Details
-- **Endpoint:** `GET /api/teams/{uuid}`
-- **Authentication:** Yes (Team Member)
-- **Success Response:** `200 OK` (Includes members, recent tasks, statistics)
-
-#### Update Team
-- **Endpoint:** `PUT /api/teams/{uuid}`
-- **Authentication:** Yes (Lead/Admin)
-- **Request Payload:**
-```json
-{
-  "name": "Updated Team Name"
-}
-```
-
-#### Delete Team
-- **Endpoint:** `DELETE /api/teams/{uuid}`
-- **Authentication:** Yes (Admin only)
-- **Success Response:** `200 OK`
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| GET | `/api/teams` | ✅ | List all teams the authenticated user belongs to (paginated) |
+| POST | `/api/teams` | ✅ | Create a new team (creator becomes team lead automatically) |
+| GET | `/api/teams/{uuid}` | ✅ Team Member | View team details including members, tasks, and statistics |
+| PUT | `/api/teams/{uuid}` | ✅ Lead/Admin | Update team name and settings |
+| DELETE | `/api/teams/{uuid}` | ✅ Admin Only | Delete a team and all associated data |
 
 ---
 
 ### Task Management Endpoints
 
-#### List Team Tasks
-- **Endpoint:** `GET /api/tasks/team/{teamId}`
-- **Authentication:** Yes (Team Member)
-- **Query Parameters:**
-  - `status`: pending|in_progress|completed
-  - `priority`: low|medium|high
-  - `assigned_to`: user_id
-  - `overdue`: true|false
-  - `sort_by`: created_at|due_date|priority|status|title
-  - `sort_order`: asc|desc
-  - `per_page`: 1-100
-- **Success Response:** `200 OK` (Paginated tasks with relationships)
-
-#### Get My Tasks
-- **Endpoint:** `GET /api/tasks/my-tasks`
-- **Authentication:** Yes
-- **Query Parameters:** Same as above
-- **Success Response:** `200 OK`
-
-#### Create Task
-- **Endpoint:** `POST /api/tasks`
-- **Authentication:** Yes (Team Member)
-- **Request Payload:**
-```json
-{
-  "title": "Implement user authentication",
-  "description": "Add JWT authentication to the API",
-  "status": "pending",
-  "priority": "high",
-  "due_date": "2026-01-25",
-  "team_id": 1,
-  "assignee_ids": [2, 3, 4]
-}
-```
-- **Success Response:** `201 Created`
-
-#### View Task Details
-- **Endpoint:** `GET /api/tasks/{uuid}`
-- **Authentication:** Yes (Team Member or Assignee)
-- **Success Response:** `200 OK` (Includes comments, files, assignees)
-
-#### Update Task
-- **Endpoint:** `PUT /api/tasks/{uuid}`
-- **Authentication:** Yes (Lead/Creator)
-- **Request Payload:** Any task field (all optional)
-- **Success Response:** `200 OK`
-
-#### Update Task Status
-- **Endpoint:** `PATCH /api/tasks/{uuid}/status`
-- **Authentication:** Yes (Lead/Assignee)
-- **Request Payload:**
-```json
-{
-  "status": "completed"
-}
-```
-- **Success Response:** `200 OK`
-
-#### Assign Users to Task
-- **Endpoint:** `POST /api/tasks/{uuid}/assign`
-- **Authentication:** Yes (Lead/Creator)
-- **Request Payload:**
-```json
-{
-  "user_ids": [2, 3, 4]
-}
-```
-- **Success Response:** `200 OK`
-
-#### Remove Task Assignees
-- **Endpoint:** `POST /api/tasks/{uuid}/remove-assignees`
-- **Authentication:** Yes (Lead/Creator)
-- **Request Payload:**
-```json
-{
-  "user_ids": [3]
-}
-```
-- **Success Response:** `200 OK`
-
-#### Delete Task
-- **Endpoint:** `DELETE /api/tasks/{uuid}`
-- **Authentication:** Yes (Lead/Admin)
-- **Success Response:** `200 OK`
-
-#### Get Task Statistics
-- **Endpoint:** `GET /api/tasks/team/{teamId}/statistics`
-- **Authentication:** Yes (Team Member)
-- **Success Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "total": 25,
-    "pending": 8,
-    "in_progress": 12,
-    "completed": 5,
-    "overdue": 3,
-    "high_priority": 7
-  }
-}
-```
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| GET | `/api/tasks/team/{teamId}` | ✅ Team Member | List all tasks for a specific team with filtering and sorting |
+| GET | `/api/tasks/my-tasks` | ✅ | Get all tasks assigned to the authenticated user across all teams |
+| POST | `/api/tasks` | ✅ Team Member | Create a new task in a team with optional assignees |
+| GET | `/api/tasks/{uuid}` | ✅ Team Member/Assignee | View detailed task information including comments and files |
+| PUT | `/api/tasks/{uuid}` | ✅ Lead/Creator | Update task details (title, description, priority, due date) |
+| PATCH | `/api/tasks/{uuid}/status` | ✅ Lead/Assignee | Update only the task status (pending/in_progress/completed) |
+| DELETE | `/api/tasks/{uuid}` | ✅ Lead/Admin | Delete a task and all associated data |
+| POST | `/api/tasks/{uuid}/assign` | ✅ Lead/Creator | Assign one or more users to a task |
+| POST | `/api/tasks/{uuid}/remove-assignees` | ✅ Lead/Creator | Remove one or more users from a task |
+| GET | `/api/tasks/team/{teamId}/statistics` | ✅ Team Member | Get task statistics for a team (total, by status, overdue, etc.) |
 
 ---
 
 ### Invitation Endpoints
 
-#### Send Invitations
-- **Endpoint:** `POST /api/invites`
-- **Authentication:** Yes (Team Lead/Admin)
-- **Request Payload:**
-```json
-{
-  "team_id": 1,
-  "invitations": [
-    {"email": "alice@example.com", "role": "member"},
-    {"email": "bob@example.com", "role": "lead"}
-  ]
-}
-```
-- **Success Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "results": [
-      {"email": "alice@example.com", "success": true, "message": "Invitation sent"},
-      {"email": "bob@example.com", "success": true, "message": "Invitation sent"}
-    ],
-    "summary": {
-      "successful": 2,
-      "failed": 0
-    }
-  }
-}
-```
-
-#### Accept Invitation
-- **Endpoint:** `POST /api/invites/accept`
-- **Authentication:** Yes
-- **Request Payload:**
-```json
-{
-  "token": "64-character-token-from-email"
-}
-```
-- **Success Response:** `200 OK`
-
-#### Get My Pending Invitations
-- **Endpoint:** `GET /api/invites/my-pending`
-- **Authentication:** Yes
-- **Success Response:** `200 OK` (List of pending invitations)
-
-#### Get Team Invitations
-- **Endpoint:** `GET /api/invites/team/{teamId}`
-- **Authentication:** Yes (Team Lead/Admin)
-- **Query Parameters:** `status` (optional)
-- **Success Response:** `200 OK`
-
-#### Revoke Invitation
-- **Endpoint:** `DELETE /api/invites/{inviteId}`
-- **Authentication:** Yes (Inviter)
-- **Success Response:** `200 OK`
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/api/invites` | ✅ Lead/Admin | Send email invitations to join a team with specified roles |
+| POST | `/api/invites/accept` | ✅ | Accept a team invitation using the token from email |
+| GET | `/api/invites/my-pending` | ✅ | Get all pending invitations for the authenticated user |
+| GET | `/api/invites/team/{teamId}` | ✅ Lead/Admin | Get all invitations for a specific team |
+| DELETE | `/api/invites/{inviteId}` | ✅ Inviter | Revoke a pending invitation |
 
 ---
 
-### Error Responses
+### Common Query Parameters
 
-All endpoints may return:
+**Pagination:**
+- `per_page`: Number of items per page (1-100, default: 10)
 
-**400 Bad Request:**
-```json
-{
-  "success": false,
-  "message": "Invalid request"
-}
-```
+**Task Filtering:**
+- `status`: Filter by status (pending|in_progress|completed)
+- `priority`: Filter by priority (low|medium|high)
+- `assigned_to`: Filter by assignee user ID
+- `assigned_by`: Filter by creator user ID
+- `team_id`: Filter by team ID
+- `overdue`: Show only overdue tasks (true|false)
+- `due_soon`: Show tasks due in next 7 days (true|false)
 
-**401 Unauthorized:**
-```json
-{
-  "message": "Unauthenticated."
-}
-```
+**Sorting:**
+- `sort_by`: Sort field (created_at|due_date|priority|status|title)
+- `sort_order`: Sort direction (asc|desc)
 
-**403 Forbidden:**
-```json
-{
-  "success": false,
-  "message": "You are not authorized to perform this action"
-}
-```
+---
 
-**404 Not Found:**
-```json
-{
-  "success": false,
-  "message": "Resource not found"
-}
-```
+### HTTP Status Codes
 
-**422 Validation Error:**
-```json
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "email": ["The email has already been taken."],
-    "title": ["The title must be at least 3 characters."]
-  }
-}
-```
-
-**500 Internal Server Error:**
-```json
-{
-  "success": false,
-  "message": "An error occurred while processing your request"
-}
-```
+| Code | Meaning |
+|------|---------|
+| 200 | Success - Request completed successfully |
+| 201 | Created - Resource created successfully |
+| 400 | Bad Request - Invalid request format |
+| 401 | Unauthorized - Authentication required or invalid token |
+| 403 | Forbidden - User lacks permission for this action |
+| 404 | Not Found - Resource does not exist |
+| 422 | Validation Error - Input validation failed |
+| 500 | Server Error - Internal server error occurred |
 
 ---
 
