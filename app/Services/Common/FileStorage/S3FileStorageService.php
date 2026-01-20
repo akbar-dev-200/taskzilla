@@ -18,10 +18,12 @@ class S3FileStorageService implements FileStorageService
         $filename = $filename ?? $this->generateUniqueFilename($file);
         $directory = trim($directory, '/');
 
-        // Store file on S3
+        // Store file on S3.
+        // NOTE: We do not force 'public' visibility here because many modern S3 buckets
+        // disable ACLs (Bucket owner enforced). Access should be controlled via bucket
+        // policy or signed URLs.
         $path = $file->storeAs($directory, $filename, [
             'disk' => $this->disk,
-            'visibility' => 'public', // Change to 'private' if you want secure URLs
         ]);
 
         return [

@@ -70,8 +70,28 @@ class AvatarService
         $filename = 'default-' . Str::uuid()->toString() . '.svg';
         $path = trim($directory, '/') . '/' . $filename;
 
-        // Write directly to S3 (no local file required).
-        Storage::disk('s3')->put($path, $svg, ['visibility' => 'public', 'ContentType' => 'image/svg+xml']);
+        /**
+         * Write directly to S3 (no local file required).
+         *
+         * IMPORTANT:
+         * Many S3 buckets disable ACLs (Object Ownership: "Bucket owner enforced").
+         * In that setup, attempting to set "public" visibility can make uploads fail.
+         *
+         * So we do NOT force visibility here; access should be controlled via bucket policy
+         * or via signed URLs (temporaryUrl) if you keep the bucket private.
+         */
+        $ok = Storage::disk('s3')->put($path, $svg, [
+            'ContentType' => 'image/svg+xml',
+        ]);
+
+        if (!$ok) {
+            Log::warning('Failed to upload default avatar to S3 (put returned false)', [
+                'user_id' => $user->id,
+                'path' => $path,
+                'bucket' => config('filesystems.disks.s3.bucket'),
+                'region' => config('filesystems.disks.s3.region'),
+            ]);
+        }
 
         $user->avatar = $path;
         $user->save();
