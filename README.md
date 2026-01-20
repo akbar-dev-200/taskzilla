@@ -856,9 +856,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📧 Email: support@taskzilla.com
+- 📧 Email: akbar.khuram@dubizzlelabs.com
 - 📖 Documentation: [See docs folder](docs/)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/taskzilla/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/akbar-dev-200/taskzilla/issues)
 
 ---
 
