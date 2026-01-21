@@ -150,7 +150,7 @@ class InviteController extends Controller
     {
         try {
             // Accept UUIDs (external identifier)
-            $team = Team::where('uuid', '=', $teamId, 'and')->firstOrFail();
+            $team = Team::query()->where('uuid', $teamId)->firstOrFail();
             $user = $request->user();
 
             // Check if user has permission to view invitations
@@ -211,6 +211,14 @@ class InviteController extends Controller
     private function isTeamAdmin(Team $team, $user): bool
     {
         $membership = $team->members()->where('user_id', $user->id)->first();
-        return $membership && $membership->pivot->role->value === 'admin';
+        if (!$membership) {
+            return false;
+        }
+        
+        $role = $membership->pivot->role;
+        // Handle both enum and string values
+        $roleValue = $role instanceof \App\Enums\UserRole ? $role->value : $role;
+        
+        return $roleValue === 'admin';
     }
 }
