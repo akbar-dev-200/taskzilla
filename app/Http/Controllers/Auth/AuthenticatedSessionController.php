@@ -31,6 +31,8 @@ class AuthenticatedSessionController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'avatar' => $user->avatar,
+                    'avatar_url' => $user->avatar_url,
                 ],
                 'token' => $token,
             ],
