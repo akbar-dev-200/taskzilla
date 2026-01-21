@@ -45,7 +45,7 @@ class InviteRequest extends FormRequest
      * {
      *   "team_id": "...uuid...",
      *   "emails": ["a@x.com", "b@x.com"],
-     *   "role": "member"
+     *   "role": "member"  // optional, defaults to "member"
      * }
      *
      * by transforming it into the canonical format:
@@ -57,9 +57,9 @@ class InviteRequest extends FormRequest
     {
         $hasInvitations = $this->has('invitations');
         $emails = $this->input('emails');
-        $role = $this->input('role');
+        $role = $this->input('role', 'member'); // Default to 'member' if not provided
 
-        if (!$hasInvitations && is_array($emails) && !empty($emails) && is_string($role) && $role !== '') {
+        if (!$hasInvitations && is_array($emails) && !empty($emails)) {
             $this->merge([
                 'invitations' => array_map(
                     fn ($email) => ['email' => $email, 'role' => $role],
