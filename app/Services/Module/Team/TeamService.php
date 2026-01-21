@@ -25,10 +25,10 @@ class TeamService
                 $query->where('user_id', $user->id);
             })
             ->with([
-                'lead:id,name,email',
-                'creator:id,name,email',
+                'lead:id,name,email,avatar',
+                'creator:id,name,email,avatar',
                 'members' => function ($query) {
-                    $query->select('users.id', 'users.name', 'users.email')
+                    $query->select('users.id', 'users.name', 'users.email', 'users.avatar')
                         ->withPivot(['role', 'joined_at']);
                 }
             ])
@@ -63,10 +63,10 @@ class TeamService
 
             // Load relationships for response
             $team->load([
-                'lead:id,name,email',
-                'creator:id,name,email',
+                'lead:id,name,email,avatar',
+                'creator:id,name,email,avatar',
                 'members' => function ($query) {
-                    $query->select('users.id', 'users.name', 'users.email')
+                    $query->select('users.id', 'users.name', 'users.email', 'users.avatar')
                         ->withPivot(['role', 'joined_at']);
                 }
             ]);
@@ -84,10 +84,10 @@ class TeamService
     public function getTeamDetails(Team $team): Team
     {
         return $team->load([
-            'lead:id,name,email',
-            'creator:id,name,email',
+            'lead:id,name,email,avatar',
+            'creator:id,name,email,avatar',
             'members' => function ($query) {
-                $query->select('users.id', 'users.name', 'users.email', 'users.created_at')
+                $query->select('users.id', 'users.name', 'users.email', 'users.avatar', 'users.created_at')
                     ->withPivot(['role', 'joined_at', 'uuid'])
                     ->orderBy('team_user.joined_at', 'desc');
             },
@@ -129,10 +129,10 @@ class TeamService
         
         // Reload relationships
         $team->load([
-            'lead:id,name,email',
-            'creator:id,name,email',
+            'lead:id,name,email,avatar',
+            'creator:id,name,email,avatar',
             'members' => function ($query) {
-                $query->select('users.id', 'users.name', 'users.email')
+                $query->select('users.id', 'users.name', 'users.email', 'users.avatar')
                     ->withPivot(['role', 'joined_at']);
             }
         ]);
